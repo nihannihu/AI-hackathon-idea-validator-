@@ -1,32 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Results from './components/Results';
-import mockData from './mockData.json';
 
 const App = () => {
   const [idea, setIdea] = useState('');
-  const [status, setStatus] = useState('idle'); // idle, analyzing, result
+  const [status, setStatus] = useState('idle'); // idle, analyzing, result, error
   const [loadingText, setLoadingText] = useState('Analyzing Idea...');
-  const [scores, setScores] = useState({
-    originality: 85,
-    feasibility: 65,
-    impact: 92
-  });
+  const [scores, setScores] = useState({ originality: 0, feasibility: 0, impact: 0 });
   const [feedback, setFeedback] = useState('');
   const [mvpFeatures, setMvpFeatures] = useState([]);
   const [techStack, setTechStack] = useState([]);
 
-  const analyzeIdea = () => {
+  const analyzeIdea = async () => {
     if (!idea.trim()) return;
     setStatus('analyzing');
-    
-    // Find matching idea in mockData
-    const matchedIdea = mockData.find(m => 
-      idea.toLowerCase().includes(m.idea.toLowerCase().split(' ').slice(0, 3).join(' ')) ||
-      m.idea.toLowerCase().includes(idea.toLowerCase().split(' ').slice(0, 3).join(' '))
-    );
 
     const phrases = [
       "Analyzing market saturation...",
@@ -36,39 +25,50 @@ const App = () => {
       "Generating roast profile...",
       "Finalizing verdict..."
     ];
-    
+
     let i = 0;
     const interval = setInterval(() => {
       if (i < phrases.length) {
         setLoadingText(phrases[i]);
         i++;
-      } else {
-        clearInterval(interval);
-        
-        if (matchedIdea) {
-          setScores(matchedIdea.scores);
-          setFeedback(matchedIdea.feedback);
-          setMvpFeatures(matchedIdea.mvpFeatures);
-          setTechStack(matchedIdea.techStack.map(t => ({ name: t, category: 'Tech' })));
-        } else {
-          // Randomized fallback if no match
-          setScores({
-            originality: Math.floor(Math.random() * 40) + 60,
-            feasibility: Math.floor(Math.random() * 50) + 40,
-            impact: Math.floor(Math.random() * 30) + 70,
-          });
-          setFeedback("Your idea has potential, but the current market is crowded. Focus on a niche integration or a specific user pain point to improve feasibility.");
-          setMvpFeatures(["User Authentication", "Core Logic Engine", "Basic Dashboard"]);
-          setTechStack([
-            { name: "React", category: "Frontend" },
-            { name: "Tailwind", category: "UI" },
-            { name: "Supabase", category: "Backend" }
-          ]);
-        }
-        
-        setStatus('result');
       }
-    }, 600);
+    }, 800);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea }),
+      });
+
+      clearInterval(interval);
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Server error');
+      }
+
+      const data = await response.json();
+      setScores(data.scores);
+      setFeedback(data.feedback);
+      setMvpFeatures(data.mvpFeatures);
+
+      // Normalize techStack: handle both string[] and object[] formats from LLM
+      if (data.techStack && data.techStack.length > 0) {
+        if (typeof data.techStack[0] === 'string') {
+          setTechStack(data.techStack.map(t => ({ name: t, category: 'Tech' })));
+        } else {
+          setTechStack(data.techStack);
+        }
+      }
+
+      setStatus('result');
+    } catch (error) {
+      clearInterval(interval);
+      console.error('Validation error:', error);
+      alert('Failed to validate idea: ' + error.message);
+      setStatus('idle');
+    }
   };
 
   return (

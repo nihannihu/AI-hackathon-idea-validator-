@@ -14,11 +14,32 @@ app.use(express.json());
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
+// Retry helper for rate limits
+async function callWithRetry(fn, retries = 3, delay = 5000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const is429 = error.message && error.message.includes('429');
+      if (is429 && i < retries - 1) {
+        console.log(`Rate limited. Retry ${i + 1}/${retries} in ${delay / 1000}s...`);
+        await new Promise(r => setTimeout(r, delay));
+        delay *= 2; // exponential backoff
+      } else {
+        throw error;
+      }
+    }
+  }
+}
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Valid8 Backend is running' });
 });
 
 app.post('/api/validate', async (req, res) => {
+  console.log('--- New Validation Request ---');
+  console.log('Body:', JSON.stringify(req.body));
+  
   const { idea } = req.body;
   if (!idea) {
     return res.status(400).json({ error: 'Idea description is required' });
@@ -30,7 +51,7 @@ app.post('/api/validate', async (req, res) => {
 
   try {
     const model = genAI.getGenerativeModel({ 
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       generationConfig: {
         responseMimeType: 'application/json',
       }
@@ -59,7 +80,7 @@ app.post('/api/validate', async (req, res) => {
       }
     `;
 
-    const result = await model.generateContent(prompt);
+    const result = await callWithRetry(() => model.generateContent(prompt));
     const textRes = result.response.text();
     
     // Safety parse
