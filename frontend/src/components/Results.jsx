@@ -9,7 +9,7 @@ import {
   Cpu 
 } from 'lucide-react';
 
-const Results = ({ scores, onReset }) => {
+const Results = ({ scores, feedback, mvpFeatures, techStack, onReset }) => {
   const getScoreColor = (score) => {
     if (score >= 70) return 'text-success border-success/30 bg-success/5';
     if (score >= 40) return 'text-warning border-warning/30 bg-warning/5';
@@ -76,10 +76,10 @@ const Results = ({ scores, onReset }) => {
             <h3 className="font-black uppercase tracking-[0.2em] text-danger text-sm">System Roast</h3>
           </div>
           <p className="text-lg text-primary-text leading-relaxed font-medium italic pl-4 border-l-2 border-danger/30 mb-2">
-            "Your idea is essentially a 'Hello World' for the blockchain. It's technically feasible but socially redundant. To make this work, stop focusing on the NFT aspect and start solving the actual data provenance issue for medical supplies."
+            "{feedback}"
           </p>
           <p className="text-xs text-muted-text font-mono mt-4 uppercase tracking-widest">
-            {'> '} Recommendation: Narrow scope by 40% and double-down on hardware integration.
+            {'> '} Recommendation: Refine based on system critique.
           </p>
         </div>
       </div>
@@ -94,16 +94,11 @@ const Results = ({ scores, onReset }) => {
             <h3 className="font-black uppercase tracking-[0.2em] text-primary text-sm">MVP Roadmap (24H)</h3>
           </div>
           <ul className="space-y-4">
-            {[
-              { id: '01', title: 'Hardware Interface', desc: 'Secure sensor data ingestion layer' },
-              { id: '02', title: 'Truth-Log Engine', desc: 'Immutable audit trail on Supabase' },
-              { id: '03', title: 'Admin Terminal', desc: 'Real-time monitoring and alert UI' }
-            ].map((feat, i) => (
+            {mvpFeatures.map((feat, i) => (
               <li key={i} className="flex gap-4 group cursor-default">
-                <span className="text-xs font-black text-primary/30 mt-1 font-mono tracking-tighter group-hover:text-primary transition-colors">{feat.id}</span>
+                <span className="text-xs font-black text-primary/30 mt-1 font-mono tracking-tighter group-hover:text-primary transition-colors">0{i+1}</span>
                 <div>
-                  <h4 className="font-bold text-primary-text text-sm uppercase tracking-tight group-hover:text-primary transition-colors">{feat.title}</h4>
-                  <p className="text-xs text-muted-text mt-1 group-hover:text-secondary-text transition-colors">{feat.desc}</p>
+                  <h4 className="font-bold text-primary-text text-sm uppercase tracking-tight group-hover:text-primary transition-colors">{feat}</h4>
                 </div>
               </li>
             ))}
@@ -118,14 +113,7 @@ const Results = ({ scores, onReset }) => {
             <h3 className="font-black uppercase tracking-[0.2em] text-secondary text-sm">Target Tech Stack</h3>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {[
-              { name: "Next.js 15", category: "Core" },
-              { name: "Tailwind CSS", category: "UI" },
-              { name: "Supabase", category: "Backend" },
-              { name: "Edge Functions", category: "Compute" },
-              { name: "MQTT.js", category: "Protocol" },
-              { name: "Zustand", category: "State" }
-            ].map((tech, i) => (
+            {techStack.map((tech, i) => (
               <div key={i} className="p-3 bg-background/50 border border-border-color rounded-xl flex items-center gap-3 group hover:border-secondary transition-all hover:-translate-y-0.5">
                 <Cpu className="w-4 h-4 text-secondary/40 group-hover:text-secondary transition-colors" />
                 <div>

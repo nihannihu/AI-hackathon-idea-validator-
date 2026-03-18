@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Results from './components/Results';
+import mockData from './mockData.json';
 
 const App = () => {
   const [idea, setIdea] = useState('');
@@ -13,11 +14,20 @@ const App = () => {
     feasibility: 65,
     impact: 92
   });
+  const [feedback, setFeedback] = useState('');
+  const [mvpFeatures, setMvpFeatures] = useState([]);
+  const [techStack, setTechStack] = useState([]);
 
   const analyzeIdea = () => {
     if (!idea.trim()) return;
     setStatus('analyzing');
     
+    // Find matching idea in mockData
+    const matchedIdea = mockData.find(m => 
+      idea.toLowerCase().includes(m.idea.toLowerCase().split(' ').slice(0, 3).join(' ')) ||
+      m.idea.toLowerCase().includes(idea.toLowerCase().split(' ').slice(0, 3).join(' '))
+    );
+
     const phrases = [
       "Analyzing market saturation...",
       "Checking technical feasibility...",
@@ -34,19 +44,35 @@ const App = () => {
         i++;
       } else {
         clearInterval(interval);
-        // Randomize scores slightly for realism
-        setScores({
-          originality: Math.floor(Math.random() * 40) + 60,
-          feasibility: Math.floor(Math.random() * 50) + 40,
-          impact: Math.floor(Math.random() * 30) + 70,
-        });
+        
+        if (matchedIdea) {
+          setScores(matchedIdea.scores);
+          setFeedback(matchedIdea.feedback);
+          setMvpFeatures(matchedIdea.mvpFeatures);
+          setTechStack(matchedIdea.techStack.map(t => ({ name: t, category: 'Tech' })));
+        } else {
+          // Randomized fallback if no match
+          setScores({
+            originality: Math.floor(Math.random() * 40) + 60,
+            feasibility: Math.floor(Math.random() * 50) + 40,
+            impact: Math.floor(Math.random() * 30) + 70,
+          });
+          setFeedback("Your idea has potential, but the current market is crowded. Focus on a niche integration or a specific user pain point to improve feasibility.");
+          setMvpFeatures(["User Authentication", "Core Logic Engine", "Basic Dashboard"]);
+          setTechStack([
+            { name: "React", category: "Frontend" },
+            { name: "Tailwind", category: "UI" },
+            { name: "Supabase", category: "Backend" }
+          ]);
+        }
+        
         setStatus('result');
       }
-    }, 700);
+    }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-background relative selection:bg-primary/30 selection:text-primary overflow-hidden">
+    <div className="min-h-screen bg-background relative selection:bg-primary/30 selection:text-primary overflow-hidden font-sans">
       {/* Background Decor */}
       <div className="absolute inset-0 grid-bg pointer-events-none opacity-20"></div>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[300px] bg-primary/10 blur-[120px] rounded-full pointer-events-none"></div>
@@ -82,6 +108,9 @@ const App = () => {
         {status === 'result' && (
           <Results 
             scores={scores} 
+            feedback={feedback}
+            mvpFeatures={mvpFeatures}
+            techStack={techStack}
             onReset={() => setStatus('idle')} 
           />
         )}
@@ -90,7 +119,7 @@ const App = () => {
       <footer className="relative z-10 py-16 text-center border-t border-border-color mt-20">
         <div className="flex flex-col items-center gap-4">
           <p className="text-muted-text text-[10px] uppercase tracking-[0.4em] font-bold">
-            Valid<span className="text-primary italic">8</span> OS v1.0.4 | Neural-Link Established
+            Valid<span className="text-primary italic">8</span> OS v1.1.0 | Integrated Analysis Engine
           </p>
           <div className="flex gap-6 opacity-30 hover:opacity-100 transition-opacity">
             <div className="w-1 h-1 bg-primary rounded-full animate-ping"></div>

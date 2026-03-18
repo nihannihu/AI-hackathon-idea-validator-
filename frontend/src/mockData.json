@@ -1,0 +1,97 @@
+[
+  {
+    "idea": "An app that detects crop diseases using AI and suggests fertilizers",
+    "scores": {
+      "originality": 45,
+      "feasibility": 85,
+      "impact": 90
+    },
+    "feedback": "This is a highly impactful idea, but mechanically it is extremely overdone at hackathons. Every event has a crop disease detector using transfer learning on ResNet. To stand out, you need a twist—such as offline-first capability for remote farmers using Web-Assembly, or SMS-based fallback.",
+    "mvpFeatures": [
+      "Camera integration with offline caching (Service Workers)",
+      "On-device inference using a quantized TensorFlow Lite model",
+      "SMS-based fallback lookup via Twilio API"
+    ],
+    "techStack": [
+      "React (Vite) PWA with Workbox",
+      "TensorFlow.js / TFLite for Web",
+      "Twilio Programmable SMS API"
+    ]
+  },
+  {
+    "idea": "A blockchain-powered social network for exchanging homemade recipes",
+    "scores": {
+      "originality": 60,
+      "feasibility": 30,
+      "impact": 20
+    },
+    "feedback": "You are forcing blockchain into a problem that doesn't need it. Writing smart contracts and handling wallet authentication for recipes will consume 90% of your 24 hours. The impact is also low. Pivot to a standard Web2 stack and focus on an AI feature, like generating recipes from pantry photos.",
+    "mvpFeatures": [
+      "Pantry ingredient photo upload",
+      "LLM integration to generate 3 recipe options based on ingredients",
+      "Simple save/share functionality"
+    ],
+    "techStack": [
+      "Next.js frontend",
+      "OpenAI GPT-4 Vision API",
+      "Supabase (PostgreSQL + Auth)"
+    ]
+  },
+  {
+    "idea": "A VS Code extension that generates unit tests based on Git diffs before committing",
+    "scores": {
+      "originality": 80,
+      "feasibility": 65,
+      "impact": 95
+    },
+    "feedback": "Excellent utility with high developer appeal. The risk here is dealing with the VS Code Extension API learning curve within 24 hours. Keep the scope painfully small: only support one language (e.g., JavaScript) and only trigger on explicitly selected diffs.",
+    "mvpFeatures": [
+      "VS Code command pallet trigger reading the current active Git diff",
+      "LLM prompt to generate Jest tests based on the diff",
+      "Automatic insertion of generated tests into a .test.js file"
+    ],
+    "techStack": [
+      "VS Code Extension API (TypeScript)",
+      "Anthropic Claude 3 Haiku API (for low latency)",
+      "Node.js Child Process (for git commands)"
+    ]
+  },
+  {
+    "idea": "An AR navigation app for visually impaired people using LiDAR on iPhones",
+    "scores": {
+      "originality": 75,
+      "feasibility": 15,
+      "impact": 100
+    },
+    "feedback": "Massive impact, but a 24-hour death trap. Native iOS, ARKit, LiDAR processing, and accessible audio queues involve too many complex layers. You won't finish a demo. Pivot to an audio-only assistant that describes static photos taken by the user instead of doing real-time AR.",
+    "mvpFeatures": [
+      "Voice command to trigger photo capture",
+      "Vision API to generate a dense semantic description of the scene",
+      "Text-to-Speech (TTS) readout of the scene description"
+    ],
+    "techStack": [
+      "React Native (Expo)",
+      "Google Cloud Vision API",
+      "ElevenLabs API for natural TTS"
+    ]
+  },
+  {
+    "idea": "A browser extension that automatically summarizes lengthy terms of service into a 'danger score'",
+    "scores": {
+      "originality": 70,
+      "feasibility": 90,
+      "impact": 85
+    },
+    "feedback": "A classic, solid hackathon project. It's technically very feasible because it's just scraping the DOM and making a single LLM call. The challenge is making a beautiful UI panel. Focus entirely on the visualization of the 'danger score' to wow the judges.",
+    "mvpFeatures": [
+      "Content script to scrape TOS text from the active page",
+      "LLM endpoint to extract 'red flag' clauses and output a 1-100 score",
+      "Popup UI displaying the gauge chart and 3 bullet points of risky clauses"
+    ],
+    "techStack": [
+      "Plasmo framework (for Chrome extension scaffolding)",
+      "OpenAI API (gpt-3.5-turbo for speed)",
+      "Tailwind CSS + Radix UI (for polished popup components)"
+    ]
+  }
+]
