@@ -35,7 +35,7 @@ const App = () => {
     }, 800);
 
     try {
-      const response = await fetch('http://localhost:5000/api/validate', {
+      const response = await fetch('/api/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idea }),
