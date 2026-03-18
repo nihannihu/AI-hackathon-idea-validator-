@@ -8,7 +8,7 @@ export default function IdeaValidator() {
 
   // Core submission handler
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     
     if (!ideaInput.trim()) return;
 
@@ -16,33 +16,25 @@ export default function IdeaValidator() {
     setResults(null);
 
     try {
-      // Mock asynchronous API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock response based on the PRD
-      const mockResponse = {
-        scores: {
-          originality: 85,
-          feasibility: 70,
-          impact: 90
+      // Import axios at the top if not there, or fetch. We'll use fetch to avoid adding unused imports if handled here.
+      const response = await fetch('http://localhost:5000/api/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         },
-        feedback: "Solid idea, but execution could be tricky within 24 hours. Consider narrowing the scope to a specific crop type.",
-        mvpFeatures: [
-          "Image upload and classification for 1 specific crop",
-          "Hardcoded fertilizer recommendation mapping",
-          "Basic results display dashboard"
-        ],
-        techStack: [
-          "React (Vite) for Frontend",
-          "Node/Express backend",
-          "Google Vision API (or similar pre-trained model)"
-        ]
-      };
+        body: JSON.stringify({ idea: ideaInput })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Server error');
+      }
 
-      // Update final state
-      setResults(mockResponse);
+      const data = await response.json();
+      setResults(data);
     } catch (error) {
       console.error("Error validating idea:", error);
+      alert('Error validating idea: ' + error.message);
     } finally {
       setIsLoading(false);
     }

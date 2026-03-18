@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 dotenv.config();
 
@@ -10,26 +11,64 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Valid8 Backend is running' });
 });
 
-// Prompt validation endpoint mock
-app.post('/api/validate', (req, res) => {
+app.post('/api/validate', async (req, res) => {
   const { idea } = req.body;
   if (!idea) {
     return res.status(400).json({ error: 'Idea description is required' });
   }
-  
-  // Future LLM logic goes here
-  res.json({
-    originality: 85,
-    feasibility: 90,
-    impact: 80,
-    roast: "A solid idea but might need a clearer monetization strategy.",
-    features: ["Core Engine", "Visual Dashboard", "MVP Extractor"],
-    techStack: ["React", "Express", "OpenAI API"]
-  });
+
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in backend' });
+  }
+
+  try {
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-1.5-flash',
+      generationConfig: {
+        responseMimeType: 'application/json',
+      }
+    });
+
+    const prompt = `
+      You are an expert, brutal, and pragmatic Hackathon judge.
+      Evaluate the following hackathon idea based on a 24-hour build constraints.
+      
+      Idea: "${idea}"
+      
+      Output ONLY a JSON object (no markdown formatting, no comments) adhering strictly to this schema:
+      {
+        "scores": {
+          "originality": number (0-100),
+          "feasibility": number (0-100, how easy is it to build a working prototype in 24 hours),
+          "impact": number (0-100)
+        },
+        "feedback": string (Provide a concise, brutal 1-2 paragraph constructive roast. Tell them why it might fail and how to pivot to win.),
+        "mvpFeatures": [ string, string, string ] (Exactly 3 core features to build. Strip away feature creep.),
+        "techStack": [ 
+          { "name": string, "category": string }, 
+          { "name": string, "category": string },
+          { "name": string, "category": string }
+        ] (Give exactly 3 specific tech recommendations with their category, e.g., "Frontend", "Database", "AI Engine")
+      }
+    `;
+
+    const result = await model.generateContent(prompt);
+    const textRes = result.response.text();
+    
+    // Safety parse
+    const jsonRes = JSON.parse(textRes.trim());
+    return res.json(jsonRes);
+  } catch (error) {
+    console.error('Error with Gemini API:', error);
+    return res.status(500).json({ error: 'Failed to assess idea', details: error.message });
+  }
 });
 
 app.listen(PORT, () => {
